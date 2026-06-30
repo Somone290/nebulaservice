@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nebula Service — Premium Game Mods</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --void: #04020e; --deep: #080419;
+    --nebula1: #7b2fff; --nebula2: #b94cff; --nebula3: #3d9bff;
+    --star: #e8deff; --muted: #8b7aac;
+    --glass: rgba(123,47,255,0.08); --border: rgba(123,47,255,0.25);
+    --glow: 0 0 40px rgba(123,47,255,0.4), 0 0 80px rgba(123,47,255,0.15);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--void); color: var(--star); font-family: 'Inter', sans-serif; overflow-x: hidden; min-height: 100vh; }
+  #nebula-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    background: linear-gradient(to bottom, rgba(4,2,14,0.95), transparent);
+    backdrop-filter: blur(2px);
+  }
+  .logo {
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.4rem;
+    letter-spacing: 0.08em; text-decoration: none;
+    background: linear-gradient(135deg, var(--nebula1), var(--nebula3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .logo-dot {
+    display: inline-block; width: 10px; height: 10px;
+    background: var(--nebula2); border-radius: 50%; margin-right: 10px;
+    box-shadow: 0 0 12px var(--nebula2), 0 0 24px var(--nebula1);
+    vertical-align: middle; position: relative; top: -2px;
+  }
+  .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--star); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--nebula1), var(--nebula2)) !important;
+    color: #fff !important; padding: 10px 22px; border-radius: 6px;
+    font-weight: 600 !important; box-shadow: 0 0 20px rgba(123,47,255,0.5);
+    transition: box-shadow 0.2s, transform 0.2s !important; cursor: pointer;
+  }
+  .nav-cta:hover { box-shadow: 0 0 32px rgba(123,47,255,0.8) !important; transform: translateY(-1px); }
+
+  /* HERO */
+  #hero {
+    position: relative; z-index: 1; min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 120px 24px 80px;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: 100px; padding: 6px 16px;
+    font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--nebula2);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 36px;
+    background: rgba(123,47,255,0.06); animation: fadeUp 0.8s ease both;
+  }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; background: var(--nebula2); border-radius: 50%; box-shadow: 0 0 8px var(--nebula2); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+  h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(2.8rem,8vw,6.5rem); font-weight: 900; line-height: 1.0; margin-bottom: 28px; animation: fadeUp 0.8s 0.15s ease both; }
+  h1 .line1 { display: block; background: linear-gradient(135deg,#fff 30%,var(--nebula3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  h1 .line2 { display: block; background: linear-gradient(135deg,var(--nebula1),var(--nebula2),var(--nebula3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 30px rgba(185,76,255,0.6)); }
+  .hero-sub { max-width: 540px; font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 52px; animation: fadeUp 0.8s 0.3s ease both; }
+  .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.8s 0.45s ease both; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--nebula1), var(--nebula2));
+    color: #fff; padding: 16px 36px; border-radius: 8px; font-weight: 700;
+    font-size: 0.95rem; letter-spacing: 0.05em; text-decoration: none; text-transform: uppercase;
+    box-shadow: var(--glow); transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(123,47,255,0.6),0 0 120px rgba(123,47,255,0.2); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px; background: transparent;
+    color: var(--star); padding: 16px 36px; border-radius: 8px; font-weight: 600;
+    font-size: 0.95rem; letter-spacing: 0.05em; text-decoration: none; text-transform: uppercase;
+    border: 1px solid var(--border); transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--nebula2); background: rgba(123,47,255,0.1); }
+  .hero-stats { display: flex; gap: 56px; margin-top: 80px; animation: fadeUp 0.8s 0.6s ease both; flex-wrap: wrap; justify-content: center; }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900; background: linear-gradient(135deg,var(--nebula1),var(--nebula3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+
+  /* SECTIONS */
+  section { position: relative; z-index: 1; }
+  .section-inner { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--nebula2); margin-bottom: 16px; }
+  .section-title { font-family: 'Orbitron', sans-serif; font-size: clamp(1.6rem,4vw,2.6rem); font-weight: 900; color: #fff; margin-bottom: 56px; line-height: 1.2; }
+
+  /* PRODUCTS */
+  #products { padding: 120px 0; }
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 24px; }
+  .product-card {
+    background: var(--glass); border: 1px solid var(--border); border-radius: 16px;
+    padding: 36px 32px; position: relative; overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    cursor: pointer; text-decoration: none; display: block;
+  }
+  .product-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top left,rgba(123,47,255,0.15),transparent 70%); opacity: 0; transition: opacity 0.3s; }
+  .product-card:hover { transform: translateY(-6px); border-color: var(--nebula1); box-shadow: 0 0 40px rgba(123,47,255,0.3),0 8px 32px rgba(0,0,0,0.4); }
+  .product-card:hover::before { opacity: 1; }
+  .card-game-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--nebula2); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card-game-tag::before { content: ''; width: 20px; height: 1px; background: var(--nebula2); }
+  .card-icon { width: 56px; height: 56px; border-radius: 14px; display: none; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 24px; }
+  .card-icon.fivem  { background: rgba(61,155,255,0.15); box-shadow: 0 0 20px rgba(61,155,255,0.2); }
+  .card-icon.roblox { background: rgba(255,80,80,0.12);  box-shadow: 0 0 20px rgba(255,80,80,0.15); }
+  .card-icon.cs2    { background: rgba(255,180,0,0.12);  box-shadow: 0 0 20px rgba(255,180,0,0.15); }
+  .card-icon.fn     { background: rgba(123,47,255,0.15); box-shadow: 0 0 20px rgba(123,47,255,0.2); }
+  .card-title { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+  .card-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.65; margin-bottom: 28px; }
+  .card-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .card-features li { font-size: 0.83rem; color: rgba(232,222,255,0.75); display: flex; align-items: center; gap: 10px; }
+  .card-features li::before { content: '✦'; font-size: 0.6rem; color: var(--nebula2); }
+  .card-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 20px; }
+  .price-from { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .price-amount { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 900; color: #fff; }
+  .price-period { font-size: 0.78rem; color: var(--muted); }
+  .card-btn {
+    display: block; text-align: center; background: transparent;
+    border: 1px solid var(--border); color: var(--star); padding: 12px;
+    border-radius: 8px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; text-decoration: none; transition: background 0.2s, border-color 0.2s;
+  }
+  .product-card:hover .card-btn { background: linear-gradient(135deg,var(--nebula1),var(--nebula2)); border-color: transparent; box-shadow: 0 0 20px rgba(123,47,255,0.4); }
+  .card-badge { position: absolute; top: 20px; right: 20px; font-size: 0.65rem; font-family: 'Space Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; font-weight: 700; }
+  .badge-hot  { background: rgba(255,80,80,0.18); color: #ff6060; border: 1px solid rgba(255,80,80,0.3); }
+  .badge-ai   { background: rgba(123,47,255,0.2);  color: var(--nebula2); border: 1px solid var(--border); }
+  .badge-new  { background: rgba(61,155,255,0.15); color: #3d9bff; border: 1px solid rgba(61,155,255,0.3); }
+  .badge-free { background: rgba(61,255,143,0.15); color: #3dff8f; border: 1px solid rgba(61,255,143,0.3); }
+  .price-tier { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; }
+
+  /* WHY */
+  #why { padding: 100px 0; background: linear-gradient(180deg,transparent,rgba(123,47,255,0.04),transparent); }
+  .why-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 32px; }
+  .why-item { border-left: 2px solid var(--border); padding: 8px 0 8px 28px; }
+  .why-icon { font-size: 1.5rem; margin-bottom: 16px; }
+  .why-title { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+  .why-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.65; }
+
+  /* PROCESS */
+  #process { padding: 100px 0; }
+  .process-steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 0; position: relative; }
+  .process-steps::before { content: ''; position: absolute; top: 32px; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg,transparent,var(--border),var(--nebula1),var(--border),transparent); }
+  .step { padding: 0 24px; text-align: center; }
+  .step-num { width: 64px; height: 64px; border-radius: 50%; background: var(--deep); border: 2px solid var(--nebula1); box-shadow: 0 0 20px rgba(123,47,255,0.4); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 900; color: var(--nebula2); margin: 0 auto 28px; }
+  .step-title { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+  .step-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+
+  /* CTA */
+  #cta { padding: 100px 0; }
+  .cta-box { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 80px 64px; text-align: center; position: relative; overflow: hidden; }
+  .cta-box::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; background: radial-gradient(circle,rgba(123,47,255,0.2),transparent 70%); pointer-events: none; }
+  .cta-box h2 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.6rem,4vw,2.5rem); font-weight: 900; color: #fff; margin-bottom: 20px; }
+  .cta-box p { font-size: 1.05rem; color: var(--muted); max-width: 480px; margin: 0 auto 40px; line-height: 1.7; }
+
+  /* FOOTER */
+  footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 40px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .footer-copy { font-size: 0.82rem; color: var(--muted); }
+  .footer-links { display: flex; gap: 28px; }
+  .footer-links a { font-size: 0.82rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--star); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+
+  /* MODAL */
+  #login-modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(4,2,14,0.88); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  #login-modal.active { display: flex; }
+  .modal-backdrop { position: absolute; inset: 0; cursor: pointer; }
+  .modal-box {
+    background: linear-gradient(145deg,#0e0622,#080419);
+    border: 1px solid rgba(123,47,255,0.35); border-radius: 22px;
+    width: 100%; max-width: 420px; padding: 40px 36px;
+    position: relative; z-index: 1;
+    box-shadow: 0 0 80px rgba(123,47,255,0.25),0 32px 64px rgba(0,0,0,0.7);
+    animation: fadeUp 0.3s ease both;
+  }
+  .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: rgba(139,122,172,0.6); font-size: 1.3rem; cursor: pointer; transition: color 0.2s; line-height: 1; }
+  .modal-close:hover { color: #fff; }
+  .modal-orb { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg,#7b2fff,#b94cff); margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 0 32px rgba(123,47,255,0.55); }
+  .modal-tabs { display: flex; background: rgba(123,47,255,0.08); border: 1px solid rgba(123,47,255,0.2); border-radius: 10px; padding: 4px; margin-bottom: 24px; gap: 4px; }
+  .modal-tab { flex: 1; padding: 9px; border: none; border-radius: 7px; font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; cursor: pointer; transition: all 0.2s; background: transparent; color: #8b7aac; }
+  .modal-tab.tab-active { background: linear-gradient(135deg,#7b2fff,#b94cff); color: #fff; box-shadow: 0 0 16px rgba(123,47,255,0.4); }
+  #login-form { display: flex; flex-direction: column; gap: 14px; }
+  .field-label { font-size: 0.73rem; color: #8b7aac; letter-spacing: 0.09em; text-transform: uppercase; display: block; margin-bottom: 7px; }
+  .field-input { width: 100%; background: rgba(123,47,255,0.07); border: 1px solid rgba(123,47,255,0.22); border-radius: 10px; padding: 13px 16px; color: #fff; font-size: 0.9rem; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
+  .field-input:focus { border-color: #7b2fff; }
+  .field-input::placeholder { color: rgba(139,122,172,0.5); }
+  .modal-submit { width: 100%; margin-top: 4px; background: linear-gradient(135deg,#7b2fff,#b94cff); color: #fff; border: none; border-radius: 10px; padding: 14px; font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.09em; cursor: pointer; box-shadow: 0 0 24px rgba(123,47,255,0.45); transition: box-shadow 0.2s; }
+  .modal-submit:hover { box-shadow: 0 0 44px rgba(123,47,255,0.7); }
+  .key-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(123,47,255,0.15); text-align: center; }
+  .key-input { width: 100%; background: rgba(61,155,255,0.05); border: 1px solid rgba(61,155,255,0.2); border-radius: 10px; padding: 11px 16px; color: #3d9bff; font-size: 0.8rem; font-family: 'Space Mono', monospace; letter-spacing: 0.08em; outline: none; text-align: center; transition: border-color 0.2s; }
+  .key-input:focus { border-color: #3d9bff; }
+  .key-input::placeholder { color: rgba(61,155,255,0.4); }
+  .field-error { font-size: 0.75rem; color: #ff6060; margin-top: 5px; padding-left: 2px; }
+
+  /* TOAST */
+  #nebula-toast {
+    position: fixed; top: 28px; left: 50%; transform: translateX(-50%) translateY(-16px);
+    z-index: 99999; padding: 13px 24px; border-radius: 10px;
+    font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600;
+    pointer-events: none; opacity: 0; transition: opacity 0.3s, transform 0.3s; white-space: nowrap;
+  }
+  #nebula-toast.toast-ok { background: linear-gradient(135deg,#1a3a2a,#0d2818); border: 1px solid #3dff8f; color: #3dff8f; box-shadow: 0 0 24px rgba(61,255,143,0.2); }
+  #nebula-toast.toast-err { background: linear-gradient(135deg,#3a1a1a,#280d0d); border: 1px solid #ff4f4f; color: #ff7070; box-shadow: 0 0 24px rgba(255,79,79,0.2); }
+
+  /* ADMIN MODAL */
+  #admin-modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(4,2,14,0.92); backdrop-filter: blur(12px);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  #admin-modal.active { display: flex; }
+  .admin-box { border-color: rgba(255,79,79,0.4) !important; box-shadow: 0 0 80px rgba(255,79,79,0.2),0 32px 64px rgba(0,0,0,0.7) !important; }
+  .admin-orb { background: linear-gradient(135deg,#ff4f4f,#ff8a4f) !important; box-shadow: 0 0 32px rgba(255,79,79,0.5) !important; }
+  .admin-submit { background: linear-gradient(135deg,#ff4f4f,#ff8a4f) !important; box-shadow: 0 0 24px rgba(255,79,79,0.45) !important; }
+  .admin-submit:hover { box-shadow: 0 0 44px rgba(255,79,79,0.7) !important; }
+  .nav-cta.is-admin { background: linear-gradient(135deg,#ff4f4f,#ff8a4f) !important; box-shadow: 0 0 20px rgba(255,79,79,0.5) !important; }
+  .nav-cta.is-admin:hover { box-shadow: 0 0 32px rgba(255,79,79,0.8) !important; }
+
+  /* ADMIN DASHBOARD */
+  #admin-dashboard {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: var(--void); overflow-y: auto;
+  }
+  #admin-dashboard.active { display: block; }
+  .dash-header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 36px; background: rgba(8,4,25,0.95);
+    border-bottom: 1px solid rgba(255,79,79,0.25); backdrop-filter: blur(8px);
+  }
+  .dash-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem; color: #fff; display: flex; align-items: center; gap: 12px; }
+  .dash-close {
+    background: rgba(255,79,79,0.12); border: 1px solid rgba(255,79,79,0.35); color: #ff8a8a;
+    padding: 9px 18px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;
+  }
+  .dash-close:hover { background: rgba(255,79,79,0.2); }
+  .dash-body { max-width: 1000px; margin: 0 auto; padding: 40px 32px 100px; }
+  .dash-product {
+    background: var(--glass); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 28px; margin-bottom: 24px;
+  }
+  .dash-product-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .dash-product-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  .dash-product-title { font-family: 'Orbitron', sans-serif; font-size: 1.05rem; font-weight: 700; color: #fff; }
+  .dash-product-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .dash-row { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .dash-tier-row {
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px;
+    align-items: end; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px;
+  }
+  .dash-field label {
+    font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em;
+    display: block; margin-bottom: 6px;
+  }
+  .dash-field input {
+    width: 100%; background: rgba(123,47,255,0.06); border: 1px solid rgba(123,47,255,0.22);
+    border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 0.85rem;
+    font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;
+  }
+  .dash-field input:focus { border-color: var(--nebula1); }
+  .dash-field select {
+    width: 100%; background: rgba(123,47,255,0.06); border: 1px solid rgba(123,47,255,0.22);
+    border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 0.85rem;
+    font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; cursor: pointer;
+  }
+  .dash-field select:focus { border-color: var(--nebula1); }
+  .dash-status-select option { background: var(--deep); color: #fff; }
+  .dash-field-link {
+    grid-column: 1 / -1; margin-top: 4px;
+  }
+  .dash-save-bar {
+    display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;
+  }
+  .dash-save-btn {
+    background: linear-gradient(135deg, var(--nebula1), var(--nebula2)); color: #fff; border: none;
+    padding: 11px 24px; border-radius: 8px; font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+    font-weight: 700; letter-spacing: 0.06em; cursor: pointer; box-shadow: 0 0 18px rgba(123,47,255,0.4);
+    transition: box-shadow 0.2s;
+  }
+  .dash-save-btn:hover { box-shadow: 0 0 30px rgba(123,47,255,0.6); }
+  .dash-intro { font-size: 0.85rem; color: var(--muted); margin-bottom: 28px; line-height: 1.6; max-width: 640px; }
+
+  /* PRODUCT STATUS OVERLAY */
+  .product-card.has-status { filter: grayscale(0.6); opacity: 0.7; pointer-events: auto; }
+  .product-card.has-status .card-title,
+  .product-card.has-status .card-desc,
+  .product-card.has-status .card-features,
+  .product-card.has-status .card-price,
+  .product-card.has-status .price-tier { text-decoration: line-through; text-decoration-color: rgba(255,79,79,0.6); text-decoration-thickness: 2px; }
+  .product-card.has-status .card-btn { display: none; }
+  .status-ribbon {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(4,2,14,0.55); border-radius: 16px; z-index: 2;
+  }
+  .status-pill {
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.95rem;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 28px;
+    border-radius: 10px; transform: rotate(-6deg);
+    text-decoration: none !important;
+  }
+  .status-out_of_order { background: rgba(255,79,79,0.18); color: #ff6868; border: 2px solid #ff4f4f; box-shadow: 0 0 30px rgba(255,79,79,0.4); }
+  .status-updating { background: rgba(255,180,0,0.18); color: #ffc850; border: 2px solid #ffb000; box-shadow: 0 0 30px rgba(255,180,0,0.4); }
+  .status-down { background: rgba(139,122,172,0.2); color: #cfc3e8; border: 2px solid #8b7aac; box-shadow: 0 0 30px rgba(139,122,172,0.4); }
+
+  @media(max-width:768px) { nav { padding: 16px 20px; } .nav-links { display: none; } .hero-stats { gap: 28px; } .process-steps::before { display: none; } .cta-box { padding: 48px 24px; } footer { flex-direction: column; text-align: center; } }
+  @media(prefers-reduced-motion:reduce) { *{ animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<canvas id="nebula-canvas"></canvas>
+<div id="nebula-toast"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#"><span class="logo-dot"></span>NEBULA SERVICE</a>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#process">How It Works</a></li>
+    <li><a id="nav-cta-btn" href="#" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-badge">⟡ Undetected &amp; Continuously Updated</div>
+  <h1><span class="line1">DOMINATE</span><span class="line2">EVERY LOBBY</span></h1>
+  <p class="hero-sub">Premium external mods engineered for FiveM, Roblox, CS2 &amp; Fortnite. Undetected. Instant delivery. Built by players, for players.</p>
+  <div class="hero-btns">
+    <a href="#products" class="btn-primary">&#9654; Browse Mods</a>
+    <a href="https://discord.gg/pYgpd228Hx" target="_blank" class="btn-secondary">Join Discord</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">12K+</div><div class="stat-label">Active Users</div></div>
+    <div class="stat"><div class="stat-num">99.8%</div><div class="stat-label">Uptime</div></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">Supported Games</div></div>
+    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Support</div></div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="section-inner">
+    <div class="section-label">// Our Products</div>
+    <div class="section-title">Choose Your Weapon</div>
+    <div class="products-grid" id="products-grid"></div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+  <div class="section-inner">
+    <div class="section-label">// Why Nebula</div>
+    <div class="section-title">Built Different</div>
+    <div class="why-grid">
+      <div class="why-item"><div class="why-icon">🛡️</div><div class="why-title">Always Undetected</div><div class="why-desc">Our team monitors anticheat updates in real time and pushes patches before detection waves hit.</div></div>
+      <div class="why-item"><div class="why-icon">⚡</div><div class="why-title">Instant Delivery</div><div class="why-desc">Automated key system — purchase once and receive your access in under 60 seconds, any time of day.</div></div>
+      <div class="why-item"><div class="why-icon">🤖</div><div class="why-title">AI-Enhanced Features</div><div class="why-desc">Our Fortnite mod uses on-device AI to adapt behavior, making it virtually indistinguishable from a skilled player.</div></div>
+      <div class="why-item"><div class="why-icon">💬</div><div class="why-title">24/7 Support</div><div class="why-desc">Real people in our Discord ready to help with setup, issues, or feature requests around the clock.</div></div>
+      <div class="why-item"><div class="why-icon">🔄</div><div class="why-title">Free Updates</div><div class="why-desc">Every game update triggers an internal sprint. Subscribers get patches automatically — no extra cost, ever.</div></div>
+      <div class="why-item"><div class="why-icon">🔒</div><div class="why-title">Private &amp; Secure</div><div class="why-desc">Crypto payments accepted. Zero logs. Your identity stays yours — we operate with full OPSEC in mind.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="section-inner">
+    <div class="section-label">// Setup Process</div>
+    <div class="section-title">Live in Minutes</div>
+    <div class="process-steps">
+      <div class="step"><div class="step-num">01</div><div class="step-title">Choose a Plan</div><div class="step-desc">Pick your game and subscription length. Weekly, monthly, or lifetime options available.</div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-title">Purchase Securely</div><div class="step-desc">Pay via crypto or card. Your key is generated automatically and delivered instantly.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title">Download Loader</div><div class="step-desc">Grab the lightweight loader from our Discord. No installation wizards. No bloat.</div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-title">Dominate</div><div class="step-desc">Launch your game, run the loader, and you're in. Full control panel opens in seconds.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-inner">
+    <div class="cta-box">
+      <h2>Ready to Ascend?</h2>
+      <p>Join over 12,000 players in the Nebula community. Get instant access to all four mods with a single Discord account.</p>
+      <a href="https://discord.gg/pYgpd228Hx" target="_blank" class="btn-primary" style="display:inline-flex;font-size:1rem;">&#9670; Join the Discord</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">&copy; 2026 Nebula Service. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#">Terms</a>
+    <a href="#">Privacy</a>
+    <a href="#">Status</a>
+    <a href="https://discord.gg/pYgpd228Hx" target="_blank">Discord</a>
+  </div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal">
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close-btn">✕</button>
+    <div style="text-align:center;margin-bottom:28px;">
+      <div class="modal-orb">⬡</div>
+      <div id="modal-title" style="font-family:'Orbitron',sans-serif;font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:6px;">Welcome Back</div>
+      <div id="modal-subtitle" style="font-size:0.83rem;color:#8b7aac;">Sign in to access your Nebula mods</div>
+    </div>
+    <div class="modal-tabs">
+      <button id="tab-login" class="modal-tab tab-active">SIGN IN</button>
+      <button id="tab-register" class="modal-tab">REGISTER</button>
+    </div>
+    <form id="login-form" autocomplete="off">
+      <div id="extra-field" style="display:none;">
+        <label class="field-label">Username</label>
+        <input type="text" id="field-username" class="field-input" placeholder="Choose a username" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label">Email</label>
+        <input type="email" id="field-email" class="field-input" placeholder="you@example.com" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label">Password</label>
+        <input type="password" id="field-pass" class="field-input" placeholder="••••••••" autocomplete="off">
+      </div>
+      <button id="submit-btn" type="submit" class="modal-submit">Sign In</button>
+      <div style="text-align:center;font-size:0.82rem;color:#8b7aac;margin-top:8px;">
+        <span id="switch-text">Don't have an account?</span>
+        <a id="switch-link" href="#" style="color:#b94cff;text-decoration:none;margin-left:6px;font-weight:600;">Register</a>
+      </div>
+    </form>
+    <div class="key-section">
+      <div style="font-size:0.78rem;color:#8b7aac;margin-bottom:10px;">Have a license key?</div>
+      <input type="text" placeholder="NEBULA-XXXX-XXXX-XXXX" class="key-input">
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN MODAL (hidden route #admin) -->
+<div id="admin-modal">
+  <div class="modal-backdrop" id="admin-backdrop"></div>
+  <div class="modal-box admin-box">
+    <button class="modal-close" id="admin-close-btn">✕</button>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div class="modal-orb admin-orb">🛡</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;color:#fff;margin-bottom:6px;">Admin Access</div>
+      <div style="font-size:0.8rem;color:#8b7aac;">Restricted — authorized personnel only</div>
+    </div>
+    <form id="admin-form" autocomplete="off">
+      <div>
+        <label class="field-label">Admin Email</label>
+        <input type="email" id="admin-email" class="field-input" placeholder="jakeadmin@outlook.fr" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label">Admin Password</label>
+        <input type="password" id="admin-pass" class="field-input" placeholder="••••••••" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label">Super Secret Code</label>
+        <input type="text" id="admin-secret" class="field-input" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" style="text-align:center;letter-spacing:0.12em;font-family:'Space Mono',monospace;">
+      </div>
+      <button id="admin-submit-btn" type="submit" class="modal-submit admin-submit">Authenticate</button>
+    </form>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="admin-dashboard">
+  <div class="dash-header">
+    <div class="dash-title"><span class="modal-orb admin-orb" style="width:36px;height:36px;font-size:1rem;margin:0;">🛡</span> Nebula Admin Panel</div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <button id="dash-logout-btn" class="dash-close" style="background:rgba(255,79,79,0.06);border-color:rgba(255,79,79,0.2);color:var(--muted);">Log Out</button>
+      <button id="dash-close-btn" class="dash-close">Close Panel ✕</button>
+    </div>
+  </div>
+  <div class="dash-body" id="dash-body"></div>
+</div>
+
+<script>
+// ── CANVAS BACKGROUND ──
+(function() {
+  const canvas = document.getElementById('nebula-canvas');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const colors = ['rgba(123,47,255,','rgba(185,76,255,','rgba(61,155,255,','rgba(232,222,255,'];
+  const particles = Array.from({length:180}, () => ({
+    x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight,
+    r: Math.random()*1.8+0.3, vx: (Math.random()-0.5)*0.18, vy: (Math.random()-0.5)*0.18,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    alpha: Math.random()*0.7+0.1, twinkle: Math.random()*Math.PI*2, twinkleSpeed: Math.random()*0.015+0.005
+  }));
+  const blobs = [{x:0.2,y:0.3,r:350,c:'rgba(123,47,255,0.06)'},{x:0.75,y:0.2,r:280,c:'rgba(61,155,255,0.05)'},{x:0.5,y:0.7,r:400,c:'rgba(185,76,255,0.04)'},{x:0.85,y:0.75,r:240,c:'rgba(123,47,255,0.05)'}];
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    blobs.forEach(b => { const g=ctx.createRadialGradient(b.x*canvas.width,b.y*canvas.height,0,b.x*canvas.width,b.y*canvas.height,b.r); g.addColorStop(0,b.c); g.addColorStop(1,'transparent'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(b.x*canvas.width,b.y*canvas.height,b.r,0,Math.PI*2); ctx.fill(); });
+    particles.forEach(p => {
+      p.twinkle += p.twinkleSpeed;
+      const a = p.alpha*(0.6+0.4*Math.sin(p.twinkle));
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=p.color+a+')'; ctx.fill();
+      if(p.alpha>0.5){ctx.beginPath();ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2);ctx.fillStyle=p.color+(a*0.12)+')';ctx.fill();}
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-10)p.x=canvas.width+10; if(p.x>canvas.width+10)p.x=-10;
+      if(p.y<-10)p.y=canvas.height+10; if(p.y>canvas.height+10)p.y=-10;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── PRODUCT DATA ──
+const PRODUCTS_KEY = 'nebula_products';
+
+const DEFAULT_PRODUCTS = [
+  {
+    id: 'fivem', game: 'FiveM', icon: '', iconClass: 'fivem',
+    title: 'FiveM External Mod',
+    desc: 'Full-featured external menu built for FiveM RP servers. Untouchable from server-side anticheat.',
+    features: ['Vehicle spawner &amp; godmode','Money drops &amp; teleportation','Player ESP &amp; radar overlay','Fully external, inject-free'],
+    badge: { text: 'Popular', cls: 'badge-hot' },
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: [
+      { name: 'Week Key', price: 9, stock: 0 },
+      { name: 'Month Key', price: 29.99, stock: 0 }
+    ]
+  },
+  {
+    id: 'roblox', game: 'Roblox', icon: '', iconClass: 'roblox',
+    title: 'Roblox External Mod',
+    desc: 'External executor alternative — runs alongside Roblox without touching memory directly.',
+    features: ['Speed &amp; jump exploits','X-ray &amp; noclip modes','Auto-farm functionality','Bypass Byfron detection'],
+    badge: { text: 'Free', cls: 'badge-free' },
+    mode: 'free',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: []
+  },
+  {
+    id: 'cs2', game: 'Counter-Strike 2', icon: '', iconClass: 'cs2',
+    title: 'CS2 External Mod',
+    desc: 'Kernel-safe external cheat suite for CS2. No driver required. Stream-proof overlay built in.',
+    features: ['Aimbot with humanization curve','ESP — bones, health, distance','Triggerbot &amp; no-recoil','VAC &amp; Overwatch safe'],
+    badge: null,
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: [
+      { name: 'Day Key', price: 1.99, stock: 0 },
+      { name: 'Week Key', price: 3.99, stock: 6 },
+      { name: 'Month Key', price: 7.99, stock: 0 }
+    ]
+  },
+  {
+    id: 'fortnite', game: 'Fortnite', icon: '', iconClass: 'fn',
+    title: 'Fortnite AI Mod',
+    desc: 'Next-gen AI-driven mod for Fortnite. Adapts to your playstyle and EAC-proof by design.',
+    features: ['AI aimbot — learns your style','Build prediction &amp; counter-edit','Silent ESP with distance filter','EAC external — zero injection'],
+    badge: { text: 'AI-Powered', cls: 'badge-ai' },
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: [
+      { name: '3 Days', price: 5.00, stock: 0 },
+      { name: '1 Week', price: 7.00, stock: 0 },
+      { name: 'Lifetime', price: 15.00, stock: 0 }
+    ]
+  }
+];
+
+
+function getProducts() {
+  try {
+    const raw = localStorage.getItem(PRODUCTS_KEY);
+    if (!raw) { saveProducts(DEFAULT_PRODUCTS); return DEFAULT_PRODUCTS; }
+    return JSON.parse(raw);
+  } catch(e) { return DEFAULT_PRODUCTS; }
+}
+function saveProducts(p) { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(p)); }
+
+function tierColor(productId) {
+  if (productId === 'cs2') return { bg: 'rgba(255,180,0,0.06)', border: 'rgba(255,180,0,0.15)' };
+  if (productId === 'fivem') return { bg: 'rgba(61,155,255,0.08)', border: 'rgba(61,155,255,0.2)' };
+  return { bg: 'rgba(123,47,255,0.08)', border: 'rgba(123,47,255,0.2)' };
+}
+
+function statusLabel(status) {
+  if (status === 'out_of_order') return 'Out of Order';
+  if (status === 'updating') return 'Updating';
+  if (status === 'down') return 'Down';
+  return '';
+}
+
+function renderProducts() {
+  const products = getProducts();
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = products.map(function(p) {
+    const badgeHtml = p.badge ? '<span class="card-badge ' + p.badge.cls + '">' + p.badge.text + '</span>' : '';
+    const featuresHtml = p.features.map(function(f) { return '<li>' + f + '</li>'; }).join('');
+    let priceHtml = '';
+    if (p.freeMode === 'permanent' || p.freeMode === 'temp') {
+      priceHtml = '<div class="card-price"><span class="price-amount" style="background:linear-gradient(135deg,#3dff8f,#3d9bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">FREE' + (p.freeMode === 'temp' ? ' (for ' + p.freeDuration + ' days)' : '') + '</span></div>';
+    } else if (p.mode === 'free') {
+      priceHtml = '<div class="card-price"><span class="price-amount" style="background:linear-gradient(135deg,#3dff8f,#3d9bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">FREE</span></div>';
+    } else if (p.mode === 'simple') {
+      priceHtml = '<div class="card-price"><span class="price-from">From</span><span class="price-amount">$' + p.price + '</span><span class="price-period">/ ' + p.period + '</span></div>';
+    } else if (p.mode === 'tiers') {
+      const c = tierColor(p.id);
+      priceHtml = p.tiers.map(function(t) {
+        const stockColor = t.stock > 0 ? '#3dff8f' : '#ff6060';
+        return '<div class="price-tier" style="background:' + c.bg + ';border:1px solid ' + c.border + ';">' +
+          '<div><div style="font-family:\'Orbitron\',sans-serif;font-size:0.8rem;font-weight:700;color:#fff;">' + t.name + '</div>' +
+          '<div style="font-size:0.72rem;color:' + stockColor + ';margin-top:2px;">Stock: ' + t.stock + '</div></div>' +
+          '<div style="font-family:\'Orbitron\',sans-serif;font-size:0.95rem;font-weight:900;color:#3d9bff;">$' + t.price.toFixed(2) + '</div></div>';
+      }).join('') + '<div style="margin-bottom:20px;"></div>';
+    }
+    return '<a href="#" class="product-card open-login' + (p.status ? ' has-status' : '') + '" data-product-id="' + p.id + '" style="position:relative;">' +
+      badgeHtml +
+      (p.status ? '<div class="status-ribbon"><div class="status-pill status-' + p.status + '">' + statusLabel(p.status) + '</div></div>' : '') +
+      '<div class="card-game-tag">' + p.game + '</div>' +
+      '<div class="card-icon ' + p.iconClass + '">' + p.icon + '</div>' +
+      '<div class="card-title">' + p.title + '</div>' +
+      '<div class="card-desc">' + p.desc + '</div>' +
+      '<ul class="card-features">' + featuresHtml + '</ul>' +
+      priceHtml +
+      '<div class="card-btn">Get Access →</div>' +
+      '</a>';
+  }).join('');
+
+  // re-wire click handlers + re-observe for reveal animation
+  document.querySelectorAll('.open-login').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.preventDefault();
+      const product = products.find(function(p) { return p.id === el.dataset.productId; });
+      if (product && product.status) {
+        showToast(product.title + ' is currently ' + statusLabel(product.status).toLowerCase() + '.', false);
+        return;
+      }
+      const session = getSession();
+      if (session && product && product.downloadUrl) {
+        showToast('Starting download — ' + product.title + ' ⬇️', true);
+        window.open(product.downloadUrl, '_blank');
+      } else if (session && product) {
+        showToast('No download is configured for this product yet.', false);
+      } else {
+        openModal();
+      }
+    });
+  });
+  document.querySelectorAll('.product-card').forEach(function(el) {
+    el.style.opacity = '0';
+    io.observe(el);
+  });
+}
+
+// ── SCROLL REVEALS ──
+const reveals = document.querySelectorAll('.why-item, .step, .cta-box');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.style.animation='fadeUp 0.6s ease both';io.unobserve(e.target);} });
+}, {threshold:0.1});
+reveals.forEach(el => { el.style.opacity='0'; io.observe(el); });
+
+renderProducts();
+
+// ── AUTH SYSTEM ──
+const USERS_KEY = 'nebula_users';
+const SESSION_KEY = 'nebula_session';
+function getUsers() { try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}catch(e){return{};} }
+function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function getSession() { try{return JSON.parse(localStorage.getItem(SESSION_KEY));}catch(e){return null;} }
+function saveSession(u) { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
+function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+function showToast(msg, ok) {
+  const t = document.getElementById('nebula-toast');
+  t.textContent = msg;
+  t.className = ok ? 'toast-ok' : 'toast-err';
+  t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(-16px)'; }, 2800);
+}
+
+function updateNav(user) {
+  const btn = document.getElementById('nav-cta-btn');
+  if (user) {
+    btn.textContent = '👤 ' + user.username;
+    btn.onclick = function(e) { e.preventDefault(); clearSession(); updateNav(null); showToast('Signed out. See you! 👋', true); };
+  } else {
+    btn.textContent = 'Get Started';
+    btn.onclick = function(e) { e.preventDefault(); openModal(); };
+  }
+}
+
+// ── MODAL ──
+const modal = document.getElementById('login-modal');
+let currentMode = 'login';
+
+function openModal() {
+  if (getSession()) { showToast('You\'re already signed in! 👤', true); return; }
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  setMode('login');
+}
+function closeModal() {
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function setMode(m) {
+  currentMode = m;
+  const isLogin = m === 'login';
+  document.getElementById('tab-login').classList.toggle('tab-active', isLogin);
+  document.getElementById('tab-register').classList.toggle('tab-active', !isLogin);
+  document.getElementById('modal-title').textContent = isLogin ? 'Welcome Back' : 'Create Account';
+  document.getElementById('modal-subtitle').textContent = isLogin ? 'Sign in to your Nebula account' : 'Join Nebula Service today';
+  document.getElementById('extra-field').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('submit-btn').textContent = isLogin ? 'Sign In' : 'Create Account';
+  document.getElementById('switch-text').textContent = isLogin ? "Don't have an account?" : 'Already have an account?';
+  document.getElementById('switch-link').textContent = isLogin ? 'Register' : 'Sign In';
+  clearErrors();
+  document.querySelectorAll('.field-input').forEach(i => i.value = '');
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field-error').forEach(e => e.remove());
+  document.querySelectorAll('.field-input').forEach(i => i.style.borderColor = '');
+}
+
+function fieldError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.borderColor = '#ff4f4f';
+  let err = el.parentElement.querySelector('.field-error');
+  if (!err) { err = document.createElement('div'); err.className = 'field-error'; el.parentElement.appendChild(err); }
+  err.textContent = msg;
+}
+
+// Wire up tab buttons
+document.getElementById('tab-login').addEventListener('click', function() { setMode('login'); });
+document.getElementById('tab-register').addEventListener('click', function() { setMode('register'); });
+
+// Wire up switch link
+document.getElementById('switch-link').addEventListener('click', function(e) {
+  e.preventDefault();
+  setMode(currentMode === 'login' ? 'register' : 'login');
+});
+
+// Wire up close
+document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+// Wire up product cards & nav
+document.querySelectorAll('.open-login').forEach(function(el) {
+  el.addEventListener('click', function(e) { e.preventDefault(); openModal(); });
+});
+document.getElementById('nav-cta-btn').addEventListener('click', function(e) { e.preventDefault(); openModal(); });
+
+// Form submit
+document.getElementById('login-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  clearErrors();
+  const btn = document.getElementById('submit-btn');
+  const email = document.getElementById('field-email').value.trim().toLowerCase();
+  const password = document.getElementById('field-pass').value;
+  const users = getUsers();
+
+  if (currentMode === 'register') {
+    const username = document.getElementById('field-username').value.trim();
+    let ok = true;
+    if (!username || username.length < 3) { fieldError('field-username', 'At least 3 characters required'); ok = false; }
+    if (!email || !email.includes('@')) { fieldError('field-email', 'Enter a valid email'); ok = false; }
+    if (password.length < 6) { fieldError('field-pass', 'Password must be 6+ characters'); ok = false; }
+    if (!ok) return;
+    if (users[email]) { fieldError('field-email', 'Account already exists with this email'); return; }
+
+    btn.textContent = 'Creating account...'; btn.style.opacity = '0.7';
+    setTimeout(function() {
+      users[email] = { username, email, password, joined: Date.now() };
+      saveUsers(users);
+      const sess = { username, email };
+      saveSession(sess);
+      btn.textContent = '✓ Account created!';
+      btn.style.background = 'linear-gradient(135deg,#3dff8f,#3d9bff)';
+      btn.style.opacity = '1';
+      setTimeout(function() {
+        closeModal();
+        btn.style.background = ''; btn.style.opacity = ''; btn.textContent = 'Create Account';
+        updateNav(sess);
+        showToast('Welcome to Nebula, ' + username + '! 🚀', true);
+      }, 900);
+    }, 700);
+
+  } else {
+    if (!email) { fieldError('field-email', 'Enter your email'); return; }
+    if (!password) { fieldError('field-pass', 'Enter your password'); return; }
+
+    btn.textContent = 'Signing in...'; btn.style.opacity = '0.7';
+    setTimeout(function() {
+      const user = users[email];
+      if (!user) { btn.textContent = 'Sign In'; btn.style.opacity = '1'; fieldError('field-email', 'No account found with this email'); return; }
+      if (user.password !== password) { btn.textContent = 'Sign In'; btn.style.opacity = '1'; fieldError('field-pass', 'Incorrect password'); return; }
+
+      const sess = { username: user.username, email };
+      saveSession(sess);
+      btn.textContent = '✓ Welcome back!';
+      btn.style.background = 'linear-gradient(135deg,#3dff8f,#3d9bff)';
+      btn.style.opacity = '1';
+      setTimeout(function() {
+        closeModal();
+        btn.style.background = ''; btn.style.opacity = ''; btn.textContent = 'Sign In';
+        updateNav(sess);
+        showToast('Welcome back, ' + user.username + '! ⚡', true);
+      }, 900);
+    }, 700);
+  }
+});
+
+// ── ADMIN SYSTEM (hidden route #admin) ──
+const ADMIN_EMAIL = 'adminofnebula@outlook.com';
+const ADMIN_HASH = '964bccec8822bf3a90b1ef9a745e42cf6d22b1b57cf155dae08863d9d668c2a0';
+const ADMIN_SECRET_HASH = '36f6d934f80a58c17a533d7650728409010004b4b038163edb3bba5a90ebc57d';
+const ADMIN_SESSION_KEY = 'nebula_admin_session';
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function getAdminSession() { try { return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY)); } catch(e) { return null; } }
+function saveAdminSession() { sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ts:Date.now()})); }
+function clearAdminSession() { sessionStorage.removeItem(ADMIN_SESSION_KEY); }
+
+const adminModal = document.getElementById('admin-modal');
+function openAdminModal() {
+  adminModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeAdminModal() {
+  adminModal.classList.remove('active');
+  document.body.style.overflow = '';
+  if (location.hash === '#admin') history.replaceState(null, '', location.pathname + location.search);
+}
+
+document.getElementById('admin-close-btn').addEventListener('click', closeAdminModal);
+document.getElementById('admin-backdrop').addEventListener('click', closeAdminModal);
+
+document.getElementById('admin-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('admin-submit-btn');
+  const email = document.getElementById('admin-email').value.trim().toLowerCase();
+  const pass = document.getElementById('admin-pass').value;
+  const secret = document.getElementById('admin-secret').value.trim().toUpperCase();
+
+  btn.textContent = 'Verifying...'; btn.style.opacity = '0.7';
+  const passHash = await sha256(pass);
+  const secretHash = await sha256(secret);
+
+  setTimeout(function() {
+    if (email === ADMIN_EMAIL && passHash === ADMIN_HASH && secretHash === ADMIN_SECRET_HASH) {
+      saveAdminSession();
+      btn.textContent = '✓ Access granted';
+      btn.style.background = 'linear-gradient(135deg,#3dff8f,#3d9bff)';
+      btn.style.opacity = '1';
+      setTimeout(function() {
+        closeAdminModal();
+        btn.style.background = ''; btn.style.opacity = ''; btn.textContent = 'Authenticate';
+        document.getElementById('admin-email').value = '';
+        document.getElementById('admin-pass').value = '';
+        document.getElementById('admin-secret').value = '';
+        updateNavAdmin();
+        showToast('Admin access granted 🛡', true);
+      }, 800);
+    } else {
+      btn.textContent = 'Authenticate'; btn.style.opacity = '1';
+      showToast('Invalid admin credentials or secret code', false);
+      document.getElementById('admin-pass').value = '';
+      document.getElementById('admin-secret').value = '';
+    }
+  }, 600);
+});
+
+function updateNavAdmin() {
+  const btn = document.getElementById('nav-cta-btn');
+  if (getAdminSession()) {
+    btn.textContent = '🛡 ADMIN PANEL';
+    btn.classList.add('is-admin');
+    btn.onclick = function(e) {
+      e.preventDefault();
+      openDashboard();
+    };
+  }
+}
+
+// ── ADMIN DASHBOARD ──
+const dashboard = document.getElementById('admin-dashboard');
+
+function openDashboard() {
+  if (!getAdminSession()) { showToast('Admin authentication required', false); return; }
+  renderDashboard();
+  dashboard.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeDashboard() {
+  dashboard.classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.getElementById('dash-close-btn').addEventListener('click', closeDashboard);
+document.getElementById('dash-logout-btn').addEventListener('click', function() {
+  clearAdminSession();
+  closeDashboard();
+  const btn = document.getElementById('nav-cta-btn');
+  btn.classList.remove('is-admin');
+  updateNav(getSession());
+  showToast('Admin session ended', true);
+});
+
+function renderDashboard() {
+  const products = getProducts();
+  const body = document.getElementById('dash-body');
+  body.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;"><div class="dash-intro">Edit prices, stock levels, and download links below. Changes save instantly and update the live storefront for every visitor.</div><button id="dash-add-product-btn" class="dash-save-btn" style="white-space:nowrap;margin-left:16px;">+ Add Product</button></div>' +
+    products.map(function(p, idx) {
+      let pricingHtml = '';
+      if (p.mode === 'free') {
+        pricingHtml = '<div style="font-size:0.82rem;color:var(--muted);padding:10px 0;">This product is set to <strong style="color:#3dff8f;">FREE</strong> — no pricing fields needed.</div>';
+      } else if (p.mode === 'simple') {
+        pricingHtml = '<div class="dash-tier-row" style="grid-template-columns:1fr 1fr;">' +
+          '<div class="dash-field"><label>Price ($)</label><input type="number" step="0.01" min="0" data-idx="' + idx + '" data-field="price" value="' + p.price + '"></div>' +
+          '<div class="dash-field"><label>Period</label><input type="text" data-idx="' + idx + '" data-field="period" value="' + p.period + '" placeholder="week"></div>' +
+          '</div>';
+      } else if (p.mode === 'tiers') {
+        pricingHtml = p.tiers.map(function(t, tIdx) {
+          return '<div class="dash-tier-row">' +
+            '<div class="dash-field"><label>Tier Name</label><input type="text" data-idx="' + idx + '" data-tier="' + tIdx + '" data-field="name" value="' + t.name + '"></div>' +
+            '<div class="dash-field"><label>Price ($)</label><input type="number" step="0.01" min="0" data-idx="' + idx + '" data-tier="' + tIdx + '" data-field="price" value="' + t.price + '"></div>' +
+            '<div class="dash-field"><label>Stock</label><input type="number" step="1" min="0" data-idx="' + idx + '" data-tier="' + tIdx + '" data-field="stock" value="' + t.stock + '"></div>' +
+            '</div>';
+        }).join('');
+      }
+      return '<div class="dash-product" data-product-idx="' + idx + '">' +
+        '<div class="dash-product-header">' +
+          '<div class="dash-product-icon card-icon ' + p.iconClass + '" style="width:44px;height:44px;font-size:1.3rem;margin:0;">' + p.icon + '</div>' +
+          '<div><div class="dash-product-title">' + p.title + '</div><div class="dash-product-sub">' + p.game + '</div></div>' +
+        '</div>' +
+        '<div class="dash-field" style="margin-bottom:18px;">' +
+          '<label>Product Name</label>' +
+          '<input type="text" data-idx="' + idx + '" data-field="title" value="' + p.title + '">' +
+        '</div>' +
+        '<div class="dash-field" style="margin-bottom:18px;">' +
+          '<label>Product Status</label>' +
+          '<select data-idx="' + idx + '" data-field="status" class="dash-status-select">' +
+            '<option value=""' + (p.status === '' ? ' selected' : '') + '>✓ Available (normal)</option>' +
+            '<option value="out_of_order"' + (p.status === 'out_of_order' ? ' selected' : '') + '>Out of Order</option>' +
+            '<option value="updating"' + (p.status === 'updating' ? ' selected' : '') + '>Updating</option>' +
+            '<option value="down"' + (p.status === 'down' ? ' selected' : '') + '>Down</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="dash-save-bar" style="justify-content:flex-start;gap:8px;margin-bottom:18px;">' +
+          '<button class="dash-free-temp-btn dash-save-btn" data-free-temp-idx="' + idx + '" style="background:rgba(61,255,143,0.12);color:#3dff8f;border:1px solid rgba(61,255,143,0.3);">🕐 Free Temporarily</button>' +
+          '<button class="dash-free-perm-btn dash-save-btn" data-free-perm-idx="' + idx + '" style="background:' + (p.freeMode === 'permanent' ? 'linear-gradient(135deg,#3dff8f,#3d9bff)' : 'rgba(123,47,255,0.12)') + ';color:' + (p.freeMode === 'permanent' ? '#fff' : '#b94cff') + ';border:1px solid rgba(123,47,255,0.3);">♾️ ' + (p.freeMode === 'permanent' ? 'Disable Permanent Free' : 'Enable Permanent Free') + '</button>' +
+        '</div>' +
+        (p.freeMode === 'temp' ? '<div class="dash-field" style="margin-bottom:18px;"><label>Free Duration (days)</label><input type="number" step="1" min="1" data-idx="' + idx + '" data-field="freeDuration" value="' + p.freeDuration + '"></div>' : '') +
+        '<div class="dash-row">' + pricingHtml + '</div>' +
+        (p.mode === 'tiers' ? '<div class="dash-save-bar" style="margin-bottom:16px;"><button class="dash-add-tier-btn dash-save-btn" data-add-tier-idx="' + idx + '" style="background:rgba(123,47,255,0.12);color:#b94cff;border:1px solid rgba(123,47,255,0.3);">+ Add Key Type</button></div>' : '') +
+        '<div class="dash-field dash-field-link">' +
+          '<label>Download Link (sent to buyers after they sign in &amp; click Get Access)</label>' +
+          '<input type="text" data-idx="' + idx + '" data-field="downloadUrl" value="' + (p.downloadUrl || '') + '" placeholder="https://your-file-host.com/nebula-fivem.zip">' +
+        '</div>' +
+        '<div class="dash-save-bar"><button class="dash-save-btn" data-save-idx="' + idx + '">Save Changes</button></div>' +
+      '</div>';
+    }).join('');
+
+  // Save handlers
+  body.querySelectorAll('.dash-save-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const idx = parseInt(btn.dataset.saveIdx, 10);
+      const card = body.querySelector('[data-product-idx="' + idx + '"]');
+      const products = getProducts();
+      const p = products[idx];
+
+      card.querySelectorAll('input, select').forEach(function(input) {
+        const field = input.dataset.field;
+        const tierIdx = input.dataset.tier;
+        let val = input.value;
+        if (input.type === 'number') val = parseFloat(val) || 0;
+        if (tierIdx !== undefined) {
+          p.tiers[parseInt(tierIdx, 10)][field] = val;
+        } else {
+          p[field] = val;
+        }
+      });
+
+      saveProducts(products);
+      renderProducts();
+      btn.textContent = '✓ Saved';
+      btn.style.background = 'linear-gradient(135deg,#3dff8f,#3d9bff)';
+      showToast(p.title + ' updated successfully', true);
+      setTimeout(function() { btn.textContent = 'Save Changes'; btn.style.background = ''; }, 1500);
+    });
+  });
+
+  // Add tier button
+  body.querySelectorAll('.dash-add-tier-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const idx = parseInt(btn.dataset.addTierIdx, 10);
+      const products = getProducts();
+      const p = products[idx];
+      const newTier = { name: 'New Tier', price: 9.99, stock: 0 };
+      p.tiers.push(newTier);
+      saveProducts(products);
+      renderDashboard();
+      showToast('New key type added to ' + p.title, true);
+    });
+  });
+
+  // Add product button
+  const addProdBtn = body.querySelector('#dash-add-product-btn');
+  if (addProdBtn) {
+    addProdBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const products = getProducts();
+      const newProduct = {
+        id: 'product_' + Date.now(), game: 'New Game', icon: '', iconClass: 'fn',
+        title: 'New Product',
+        desc: 'Edit this product to add details.',
+        features: ['Feature 1','Feature 2','Feature 3','Feature 4'],
+        badge: null,
+        mode: 'simple', price: 9.99, period: 'week',
+        downloadUrl: '', status: '',
+        tiers: [],
+        freeMode: '',
+        freeDuration: '7'
+      };
+      products.push(newProduct);
+      saveProducts(products);
+      renderDashboard();
+      renderProducts();
+      showToast('New product added! Edit it below.', true);
+    });
+  }
+
+  // Free temporarily button
+  body.querySelectorAll('.dash-free-temp-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const idx = parseInt(btn.dataset.freeTempIdx, 10);
+      const products = getProducts();
+      const p = products[idx];
+      if (p.freeMode === 'temp') {
+        p.freeMode = '';
+      } else {
+        p.freeMode = 'temp';
+      }
+      saveProducts(products);
+      renderDashboard();
+      renderProducts();
+      showToast(p.freeMode === 'temp' ? 'Temporary free enabled for ' + p.title : 'Temporary free disabled', true);
+    });
+  });
+
+  // Free permanently button
+  body.querySelectorAll('.dash-free-perm-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const idx = parseInt(btn.dataset.freePermIdx, 10);
+      const products = getProducts();
+      const p = products[idx];
+      p.freeMode = p.freeMode === 'permanent' ? '' : 'permanent';
+      saveProducts(products);
+      renderDashboard();
+      renderProducts();
+      showToast(p.freeMode === 'permanent' ? 'Permanent free enabled for ' + p.title : 'Permanent free disabled', true);
+    });
+  });
+}
+
+// Check for #admin route
+function checkAdminRoute() {
+  if (location.hash === '#admin') {
+    if (getAdminSession()) { updateNavAdmin(); showToast('Already authenticated as admin', true); }
+    else openAdminModal();
+  }
+}
+window.addEventListener('hashchange', checkAdminRoute);
+checkAdminRoute();
+if (getAdminSession()) updateNavAdmin();
+
+// Restore session on load
+updateNav(getSession());
+</script>
+</body>
+</html>
