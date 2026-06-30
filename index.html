@@ -545,80 +545,68 @@ async function loadProducts() {
   }
 }
 
-// Render products (updated to use loaded data)
-async function renderProducts() {
-  const products = await loadProducts();
-  const grid = document.getElementById('products-grid');
-  
-  grid.innerHTML = products.map(p => {
-    // Your existing card HTML code here (keep it the same)
-    return `<a href="#" class="product-card" data-product-id="${p.id}"> ... </a>`;
-  }).join('');
-}
-
-// Run when page loads
-window.addEventListener('load', () => {
-  renderProducts();
-});
-  {
-    id: 'fivem', game: 'FiveM', icon: '', iconClass: 'fivem',
-    title: 'FiveM External Cheats',
-    desc: 'Full-featured external menu built for FiveM RP servers. Untouchable from server-side anticheat.',
-    features: ['Vehicle spawner &amp; godmode','Money drops &amp; teleportation','Player ESP &amp; radar overlay','Fully external, inject-free'],
-    badge: { text: 'Popular', cls: 'badge-hot' },
-    mode: 'tiers',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: [
-      { name: 'Week Key', price: 9, stock: 0 },
-      { name: 'Month Key', price: 29.99, stock: 0 }
-    ]
-  },
-  {
-    id: 'roblox', game: 'Roblox', icon: '', iconClass: 'roblox',
-    title: 'Roblox External Cheats',
-    desc: 'External executor alternative — runs alongside Roblox without touching memory directly.',
-    features: ['Speed &amp; jump exploits','X-ray &amp; noclip modes','Auto-farm functionality','Bypass Byfron detection'],
-    badge: { text: 'Free', cls: 'badge-free' },
-    mode: 'free',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: []
-  },
-  {
-    id: 'cs2', game: 'Counter-Strike 2', icon: '', iconClass: 'cs2',
-    title: 'CS2 External Cheats',
-    desc: 'Kernel-safe external cheat suite for CS2. No driver required. Stream-proof overlay built in.',
-    features: ['Aimbot with humanization curve','ESP — bones, health, distance','Triggerbot &amp; no-recoil','VAC &amp; Overwatch safe'],
-    badge: null,
-    mode: 'tiers',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: [
-      { name: 'Day Key', price: 1.99, stock: 0 },
-      { name: 'Week Key', price: 3.99, stock: 6 },
-      { name: 'Month Key', price: 7.99, stock: 0 }
-    ]
-  },
-  {
-    id: 'fortnite', game: 'Fortnite', icon: '', iconClass: 'fn',
-    title: 'Fortnite AI Cheats',
-    desc: 'Next-gen AI-driven mod for Fortnite. Adapts to your playstyle and EAC-proof by design.',
-    features: ['AI aimbot — learns your style','Build prediction &amp; counter-edit','Silent ESP with distance filter','EAC external — zero injection'],
-    badge: { text: 'AI-Powered', cls: 'badge-ai' },
-    mode: 'tiers',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: [
-      { name: '3 Days', price: 5.00, stock: 0 },
-      { name: '1 Week', price: 7.00, stock: 0 },
-      { name: 'Lifetime', price: 15.00, stock: 0 }
-    ]
-  }
+// ── PRODUCT DATA ──
+const PRODUCTS_KEY = 'nebula_products';
+const DEFAULT_PRODUCTS = [
+  {
+    id: 'fivem', game: 'FiveM', icon: '', iconClass: 'fivem',
+    title: 'FiveM External Cheats',
+    desc: 'Full-featured external menu built for FiveM RP servers. Untouchable from server-side anticheat.',
+    features: ['Vehicle spawner & godmode','Money drops & teleportation','Player ESP & radar overlay','Fully external, inject-free'],
+    badge: { text: 'Popular', cls: 'badge-hot' },
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: [
+      { name: 'Week Key', price: 9, stock: 0 },
+      { name: 'Month Key', price: 29.99, stock: 0 }
+    ]
+  },
+  {
+    id: 'roblox', game: 'Roblox', icon: '', iconClass: 'roblox',
+    title: 'Roblox External Cheats',
+    desc: 'External executor alternative — runs alongside Roblox without touching memory directly.',
+    features: ['Speed & jump exploits','X-ray & noclip modes','Auto-farm functionality','Bypass Byfron detection'],
+    badge: { text: 'Free', cls: 'badge-free' },
+    mode: 'free',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: []
+  },
+  {
+    id: 'cs2', game: 'Counter-Strike 2', icon: '', iconClass: 'cs2',
+    title: 'CS2 External Cheats',
+    desc: 'Kernel-safe external cheat suite for CS2. No driver required. Stream-proof overlay built in.',
+    features: ['Aimbot with humanization curve','ESP — bones, health, distance','Triggerbot & no-recoil','VAC & Overwatch safe'],
+    badge: null,
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: [
+      { name: 'Day Key', price: 1.99, stock: 0 },
+      { name: 'Week Key', price: 3.99, stock: 6 },
+      { name: 'Month Key', price: 7.99, stock: 0 }
+    ]
+  },
+  {
+    id: 'fortnite', game: 'Fortnite', icon: '', iconClass: 'fn',
+    title: 'Fortnite AI Cheats',
+    desc: 'Next-gen AI-driven mod for Fortnite. Adapts to your playstyle and EAC-proof by design.',
+    features: ['AI aimbot — learns your style','Build prediction & counter-edit','Silent ESP with distance filter','EAC external — zero injection'],
+    badge: { text: 'AI-Powered', cls: 'badge-ai' },
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7',
+    tiers: [
+      { name: '3 Days', price: 5.00, stock: 0 },
+      { name: '1 Week', price: 7.00, stock: 0 },
+      { name: 'Lifetime', price: 15.00, stock: 0 }
+    ]
+  }
 ];
 
 
