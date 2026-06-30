@@ -530,12 +530,36 @@
   draw();
 })();
 
-// ── PRODUCT DATA ──
-const PRODUCTS_KEY = 'nebula_products';
+// ── BACKEND CONNECTION ──
+const API_BASE = "https://nebula-backend-production-47bb.up.railway.app";
 
- const PRODUCTS_KEY = 'nebula_products';
+// Load products from backend
+async function loadProducts() {
+  try {
+    const response = await fetch(API_BASE + '/products');
+    if (!response.ok) throw new Error("Failed to load");
+    return await response.json();
+  } catch (e) {
+    console.error("Backend error, using default products", e);
+    return DEFAULT_PRODUCTS; // fallback
+  }
+}
 
-const DEFAULT_PRODUCTS = [
+// Render products (updated to use loaded data)
+async function renderProducts() {
+  const products = await loadProducts();
+  const grid = document.getElementById('products-grid');
+  
+  grid.innerHTML = products.map(p => {
+    // Your existing card HTML code here (keep it the same)
+    return `<a href="#" class="product-card" data-product-id="${p.id}"> ... </a>`;
+  }).join('');
+}
+
+// Run when page loads
+window.addEventListener('load', () => {
+  renderProducts();
+});
   {
     id: 'fivem', game: 'FiveM', icon: '', iconClass: 'fivem',
     title: 'FiveM External Cheats',
