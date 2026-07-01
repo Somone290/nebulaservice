@@ -342,9 +342,9 @@
 <section id="hero">
   <div class="hero-badge">⟡ Undetected &amp; Continuously Updated</div>
   <h1><span class="line1">DOMINATE</span><span class="line2">EVERY LOBBY</span></h1>
-  <p class="hero-sub">Premium external cheats engineered for FiveM, Roblox, CS2 &amp; Fortnite. Undetected. Instant delivery. Built by players, for players.</p>
+  <p class="hero-sub">Premium external Cheats engineered for FiveM, Roblox, CS2 &amp; Fortnite. Undetected. Instant delivery. Built by players, for players.</p>
   <div class="hero-btns">
-    <a href="#products" class="btn-primary">&#9654; Browse cheats</a>
+    <a href="#products" class="btn-primary">&#9654; Browse Cheats</a>
     <a href="https://discord.gg/pYgpd228Hx" target="_blank" class="btn-secondary">Join Discord</a>
   </div>
   <div class="hero-stats">
@@ -399,7 +399,7 @@
   <div class="section-inner">
     <div class="cta-box">
       <h2>Ready to Ascend?</h2>
-      <p>Join over 12,000 players in the Nebula community. Get instant access to all four cheats with a single Discord account.</p>
+      <p>Join over 12,000 players in the Nebula community. Get instant access to all four Cheats with a single Discord account.</p>
       <a href="https://discord.gg/pYgpd228Hx" target="_blank" class="btn-primary" style="display:inline-flex;font-size:1rem;">&#9670; Join the Discord</a>
     </div>
   </div>
@@ -424,7 +424,7 @@
     <div style="text-align:center;margin-bottom:28px;">
       <div class="modal-orb">⬡</div>
       <div id="modal-title" style="font-family:'Orbitron',sans-serif;font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:6px;">Welcome Back</div>
-      <div id="modal-subtitle" style="font-size:0.83rem;color:#8b7aac;">Sign in to access your Nebula cheats</div>
+      <div id="modal-subtitle" style="font-size:0.83rem;color:#8b7aac;">Sign in to access your Nebula Cheats</div>
     </div>
     <div class="modal-tabs">
       <button id="tab-login" class="modal-tab tab-active">SIGN IN</button>
@@ -498,6 +498,43 @@
 </div>
 
 <script>
+// ── FIREBASE CONFIG ──
+const FIREBASE_URL = 'https://nebula-backend-7fa5a-default-rtdb.firebaseio.com/';
+const FIREBASE_KEY = 'i5OXG2ujzjIA48vFzaB7RW8fZPmxJk9oByXh5y79';
+
+async function firebaseGet(path) {
+  try {
+    const res = await fetch(FIREBASE_URL + path + '.json?auth=' + FIREBASE_KEY);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { console.error('Firebase GET error:', e); return null; }
+}
+
+async function firebaseSet(path, data) {
+  try {
+    const res = await fetch(FIREBASE_URL + path + '.json?auth=' + FIREBASE_KEY, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.ok;
+  } catch(e) { console.error('Firebase SET error:', e); return false; }
+}
+
+async function loadProductsFromFirebase() {
+  const data = await firebaseGet('products');
+  if (data) {
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(data));
+    return data;
+  }
+  return getProducts();
+}
+
+async function saveProductsToFirebase(products) {
+  saveProductsToFirebase(products); // Also save locally
+  return await firebaseSet('products', products);
+}
+
 // ── CANVAS BACKGROUND ──
 (function() {
   const canvas = document.getElementById('nebula-canvas');
@@ -530,94 +567,80 @@
   draw();
 })();
 
-// ── BACKEND CONNECTION ──
-const API_BASE = "https://nebula-backend-production-47bb.up.railway.app";
-
-// Load products from backend
-async function loadProducts() {
-  try {
-    const response = await fetch(API_BASE + '/products');
-    if (!response.ok) throw new Error("Failed to load");
-    return await response.json();
-  } catch (e) {
-    console.error("Backend error, using default products", e);
-    return DEFAULT_PRODUCTS; // fallback
-  }
-}
-
 // ── PRODUCT DATA ──
 const PRODUCTS_KEY = 'nebula_products';
+
 const DEFAULT_PRODUCTS = [
-  {
-    id: 'fivem', game: 'FiveM', icon: '', iconClass: 'fivem',
-    title: 'FiveM External Cheats',
-    desc: 'Full-featured external menu built for FiveM RP servers. Untouchable from server-side anticheat.',
-    features: ['Vehicle spawner & godmode','Money drops & teleportation','Player ESP & radar overlay','Fully external, inject-free'],
-    badge: { text: 'Popular', cls: 'badge-hot' },
-    mode: 'tiers',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: [
-      { name: 'Week Key', price: 9, stock: 0 },
-      { name: 'Month Key', price: 29.99, stock: 0 }
-    ]
-  },
-  {
-    id: 'roblox', game: 'Roblox', icon: '', iconClass: 'roblox',
-    title: 'Roblox External Cheats',
-    desc: 'External executor alternative — runs alongside Roblox without touching memory directly.',
-    features: ['Speed & jump exploits','X-ray & noclip modes','Auto-farm functionality','Bypass Byfron detection'],
-    badge: { text: 'Free', cls: 'badge-free' },
-    mode: 'free',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: []
-  },
-  {
-    id: 'cs2', game: 'Counter-Strike 2', icon: '', iconClass: 'cs2',
-    title: 'CS2 External Cheats',
-    desc: 'Kernel-safe external cheat suite for CS2. No driver required. Stream-proof overlay built in.',
-    features: ['Aimbot with humanization curve','ESP — bones, health, distance','Triggerbot & no-recoil','VAC & Overwatch safe'],
-    badge: null,
-    mode: 'tiers',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: [
-      { name: 'Day Key', price: 1.99, stock: 0 },
-      { name: 'Week Key', price: 3.99, stock: 6 },
-      { name: 'Month Key', price: 7.99, stock: 0 }
-    ]
-  },
-  {
-    id: 'fortnite', game: 'Fortnite', icon: '', iconClass: 'fn',
-    title: 'Fortnite AI Cheats',
-    desc: 'Next-gen AI-driven mod for Fortnite. Adapts to your playstyle and EAC-proof by design.',
-    features: ['AI aimbot — learns your style','Build prediction & counter-edit','Silent ESP with distance filter','EAC external — zero injection'],
-    badge: { text: 'AI-Powered', cls: 'badge-ai' },
-    mode: 'tiers',
-    price: 0, period: '',
-    downloadUrl: '', status: '',
-    freeMode: '', freeDuration: '7',
-    tiers: [
-      { name: '3 Days', price: 5.00, stock: 0 },
-      { name: '1 Week', price: 7.00, stock: 0 },
-      { name: 'Lifetime', price: 15.00, stock: 0 }
-    ]
-  }
+  {
+    id: 'fivem', game: 'FiveM', icon: '', iconClass: 'fivem',
+    title: 'FiveM External Cheats',
+    desc: 'Full-featured external menu built for FiveM RP servers. Untouchable from server-side anticheat.',
+    features: ['Vehicle spawner &amp; godmode','Money drops &amp; teleportation','Player ESP &amp; radar overlay','Fully external, inject-free'],
+    badge: { text: 'Popular', cls: 'badge-hot' },
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7', freeDurationUnit: 'day',
+    tiers: [
+      { name: 'Week Key', price: 9, stock: 0 },
+      { name: 'Month Key', price: 29.99, stock: 0 }
+    ]
+  },
+  {
+    id: 'roblox', game: 'Roblox', icon: '', iconClass: 'roblox',
+    title: 'Roblox External Cheats',
+    desc: 'External executor alternative — runs alongside Roblox without touching memory directly.',
+    features: ['Speed &amp; jump exploits','X-ray &amp; noclip modes','Auto-farm functionality','Bypass Byfron detection'],
+    badge: { text: 'Free', cls: 'badge-free' },
+    mode: 'free',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7', freeDurationUnit: 'day',
+    tiers: []
+  },
+  {
+    id: 'cs2', game: 'Counter-Strike 2', icon: '', iconClass: 'cs2',
+    title: 'CS2 External Cheats',
+    desc: 'Kernel-safe external cheat suite for CS2. No driver required. Stream-proof overlay built in.',
+    features: ['Aimbot with humanization curve','ESP — bones, health, distance','Triggerbot &amp; no-recoil','VAC &amp; Overwatch safe'],
+    badge: null,
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7', freeDurationUnit: 'day',
+    tiers: [
+      { name: 'Day Key', price: 1.99, stock: 0 },
+      { name: 'Week Key', price: 3.99, stock: 6 },
+      { name: 'Month Key', price: 7.99, stock: 0 }
+    ]
+  },
+  {
+    id: 'fortnite', game: 'Fortnite', icon: '', iconClass: 'fn',
+    title: 'Fortnite AI Cheats',
+    desc: 'Next-gen AI-driven mod for Fortnite. Adapts to your playstyle and EAC-proof by design.',
+    features: ['AI aimbot — learns your style','Build prediction &amp; counter-edit','Silent ESP with distance filter','EAC external — zero injection'],
+    badge: { text: 'AI-Powered', cls: 'badge-ai' },
+    mode: 'tiers',
+    price: 0, period: '',
+    downloadUrl: '', status: '',
+    freeMode: '', freeDuration: '7', freeDurationUnit: 'day',
+    tiers: [
+      { name: '3 Days', price: 5.00, stock: 0 },
+      { name: '1 Week', price: 7.00, stock: 0 },
+      { name: 'Lifetime', price: 15.00, stock: 0 }
+    ]
+  }
 ];
 
 
 function getProducts() {
   try {
     const raw = localStorage.getItem(PRODUCTS_KEY);
-    if (!raw) { saveProducts(DEFAULT_PRODUCTS); return DEFAULT_PRODUCTS; }
+    if (!raw) { saveProductsToFirebase(DEFAULT_PRODUCTS); return DEFAULT_PRODUCTS; }
     return JSON.parse(raw);
   } catch(e) { return DEFAULT_PRODUCTS; }
 }
-function saveProducts(p) { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(p)); }
+function saveProductsToFirebase(p) { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(p)); }
 
 function tierColor(productId) {
   if (productId === 'cs2') return { bg: 'rgba(255,180,0,0.06)', border: 'rgba(255,180,0,0.15)' };
@@ -640,7 +663,13 @@ function renderProducts() {
     const featuresHtml = p.features.map(function(f) { return '<li>' + f + '</li>'; }).join('');
     let priceHtml = '';
     if (p.freeMode === 'permanent' || p.freeMode === 'temp') {
-      priceHtml = '<div class="card-price"><span class="price-amount" style="background:linear-gradient(135deg,#3dff8f,#3d9bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">FREE' + (p.freeMode === 'temp' ? ' (for ' + p.freeDuration + ' days)' : '') + '</span></div>';
+      let durationLabel = '';
+      if (p.freeMode === 'temp') {
+        const unit = p.freeDurationUnit || 'day';
+        const unitLabel = { s: 'sec', m: 'min', h: 'hrs', day: 'days', w: 'weeks' }[unit] || 'days';
+        durationLabel = ' (for ' + p.freeDuration + ' ' + unitLabel + ')';
+      }
+      priceHtml = '<div class="card-price"><span class="price-amount" style="background:linear-gradient(135deg,#3dff8f,#3d9bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">FREE' + durationLabel + '</span></div>';
     } else if (p.mode === 'free') {
       priceHtml = '<div class="card-price"><span class="price-amount" style="background:linear-gradient(135deg,#3dff8f,#3d9bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">FREE</span></div>';
     } else if (p.mode === 'simple') {
@@ -703,6 +732,12 @@ reveals.forEach(el => { el.style.opacity='0'; io.observe(el); });
 
 renderProducts();
 
+// Load products from Firebase on startup
+(async function() {
+  const fbProducts = await loadProductsFromFirebase();
+  if (fbProducts) renderProducts();
+})();
+
 // ── AUTH SYSTEM ──
 const USERS_KEY = 'nebula_users';
 const SESSION_KEY = 'nebula_session';
@@ -723,12 +758,17 @@ function showToast(msg, ok) {
 
 function updateNav(user) {
   const btn = document.getElementById('nav-cta-btn');
-  if (user) {
+  const isAdmin = getAdminSession();
+  
+  if (isAdmin) {
+    btn.textContent = '🛡 ADMIN PANEL';
+    btn.classList.add('is-admin');
+  } else if (user) {
     btn.textContent = '👤 ' + user.username;
-    btn.onclick = function(e) { e.preventDefault(); clearSession(); updateNav(null); showToast('Signed out. See you! 👋', true); };
+    btn.classList.remove('is-admin');
   } else {
     btn.textContent = 'Get Started';
-    btn.onclick = function(e) { e.preventDefault(); openModal(); };
+    btn.classList.remove('is-admin');
   }
 }
 
@@ -795,7 +835,28 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 document.querySelectorAll('.open-login').forEach(function(el) {
   el.addEventListener('click', function(e) { e.preventDefault(); openModal(); });
 });
-document.getElementById('nav-cta-btn').addEventListener('click', function(e) { e.preventDefault(); openModal(); });
+
+// Nav button click handler
+document.getElementById('nav-cta-btn').addEventListener('click', function(e) {
+  e.preventDefault();
+  const isAdmin = getAdminSession();
+  const user = getSession();
+  
+  console.log('Button clicked - Admin:', isAdmin, 'User:', user);
+  
+  if (isAdmin) {
+    console.log('Opening dashboard');
+    openDashboard();
+  } else if (user) {
+    console.log('Logging out user');
+    clearSession();
+    updateNav(null);
+    showToast('Signed out. See you! 👋', true);
+  } else {
+    console.log('Opening login modal');
+    openModal();
+  }
+});
 
 // Form submit
 document.getElementById('login-form').addEventListener('submit', function(e) {
@@ -867,9 +928,17 @@ async function sha256(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
-function getAdminSession() { try { return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY)); } catch(e) { return null; } }
-function saveAdminSession() { sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ts:Date.now()})); }
-function clearAdminSession() { sessionStorage.removeItem(ADMIN_SESSION_KEY); }
+function getAdminSession() { 
+  const val = localStorage.getItem(ADMIN_SESSION_KEY);
+  console.log('getAdminSession:', val);
+  try { return JSON.parse(val); } catch(e) { return null; } 
+}
+function saveAdminSession() { 
+  console.log('saveAdminSession called');
+  localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ts:Date.now()})); 
+  console.log('Admin session saved:', localStorage.getItem(ADMIN_SESSION_KEY));
+}
+function clearAdminSession() { localStorage.removeItem(ADMIN_SESSION_KEY); }
 
 const adminModal = document.getElementById('admin-modal');
 function openAdminModal() {
@@ -905,10 +974,10 @@ document.getElementById('admin-form').addEventListener('submit', async function(
       setTimeout(function() {
         closeAdminModal();
         btn.style.background = ''; btn.style.opacity = ''; btn.textContent = 'Authenticate';
-        document.getElementById('admin-email').value = '';
         document.getElementById('admin-pass').value = '';
         document.getElementById('admin-secret').value = '';
         updateNavAdmin();
+        renderDashboard();
         showToast('Admin access granted 🛡', true);
       }, 800);
     } else {
@@ -921,15 +990,8 @@ document.getElementById('admin-form').addEventListener('submit', async function(
 });
 
 function updateNavAdmin() {
-  const btn = document.getElementById('nav-cta-btn');
-  if (getAdminSession()) {
-    btn.textContent = '🛡 ADMIN PANEL';
-    btn.classList.add('is-admin');
-    btn.onclick = function(e) {
-      e.preventDefault();
-      openDashboard();
-    };
-  }
+  // Just call updateNav — it will detect admin session now
+  updateNav(null);
 }
 
 // ── ADMIN DASHBOARD ──
@@ -978,13 +1040,24 @@ function renderDashboard() {
         }).join('');
       }
       return '<div class="dash-product" data-product-idx="' + idx + '">' +
-        '<div class="dash-product-header">' +
-          '<div class="dash-product-icon card-icon ' + p.iconClass + '" style="width:44px;height:44px;font-size:1.3rem;margin:0;">' + p.icon + '</div>' +
-          '<div><div class="dash-product-title">' + p.title + '</div><div class="dash-product-sub">' + p.game + '</div></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">' +
+          '<div class="dash-product-header">' +
+            '<div class="dash-product-icon card-icon ' + p.iconClass + '" style="width:44px;height:44px;font-size:1.3rem;margin:0;">' + p.icon + '</div>' +
+            '<div><div class="dash-product-title">' + p.title + '</div><div class="dash-product-sub">' + p.game + '</div></div>' +
+          '</div>' +
+          '<button class="dash-delete-product-btn" data-del-prod-idx="' + idx + '" style="background:rgba(255,79,79,0.15);border:1px solid rgba(255,79,79,0.35);color:#ff8a8a;padding:8px 14px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">🗑️ Delete Product</button>' +
         '</div>' +
         '<div class="dash-field" style="margin-bottom:18px;">' +
           '<label>Product Name</label>' +
           '<input type="text" data-idx="' + idx + '" data-field="title" value="' + p.title + '">' +
+        '</div>' +
+        '<div class="dash-field" style="margin-bottom:18px;">' +
+          '<label>Description</label>' +
+          '<input type="text" data-idx="' + idx + '" data-field="desc" value="' + p.desc + '" style="min-height:60px;padding:10px 12px;resize:vertical;font-size:0.85rem;">' +
+        '</div>' +
+        '<div class="dash-field" style="margin-bottom:18px;">' +
+          '<label>Features (one per line)</label>' +
+          '<textarea data-idx="' + idx + '" data-field="features" style="width:100%;background:rgba(123,47,255,0.06);border:1px solid rgba(123,47,255,0.22);border-radius:8px;padding:10px 12px;color:#fff;font-size:0.85rem;font-family:\'Inter\',sans-serif;outline:none;resize:vertical;min-height:100px;" placeholder="Feature 1&#10;Feature 2&#10;Feature 3&#10;Feature 4">' + (p.features ? p.features.map(f => f.replace(/&amp;/g, '&')).join('\n') : '') + '</textarea>' +
         '</div>' +
         '<div class="dash-field" style="margin-bottom:18px;">' +
           '<label>Product Status</label>' +
@@ -999,8 +1072,9 @@ function renderDashboard() {
           '<button class="dash-free-temp-btn dash-save-btn" data-free-temp-idx="' + idx + '" style="background:rgba(61,255,143,0.12);color:#3dff8f;border:1px solid rgba(61,255,143,0.3);">🕐 Free Temporarily</button>' +
           '<button class="dash-free-perm-btn dash-save-btn" data-free-perm-idx="' + idx + '" style="background:' + (p.freeMode === 'permanent' ? 'linear-gradient(135deg,#3dff8f,#3d9bff)' : 'rgba(123,47,255,0.12)') + ';color:' + (p.freeMode === 'permanent' ? '#fff' : '#b94cff') + ';border:1px solid rgba(123,47,255,0.3);">♾️ ' + (p.freeMode === 'permanent' ? 'Disable Permanent Free' : 'Enable Permanent Free') + '</button>' +
         '</div>' +
-        (p.freeMode === 'temp' ? '<div class="dash-field" style="margin-bottom:18px;"><label>Free Duration (days)</label><input type="number" step="1" min="1" data-idx="' + idx + '" data-field="freeDuration" value="' + p.freeDuration + '"></div>' : '') +
+        (p.freeMode === 'temp' ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;"><div class="dash-field"><label>Free Duration</label><input type="number" step="1" min="1" data-idx="' + idx + '" data-field="freeDuration" value="' + p.freeDuration + '"></div><div class="dash-field"><label>Unit</label><select data-idx="' + idx + '" data-field="freeDurationUnit" class="dash-status-select"><option value="s"' + (p.freeDurationUnit === 's' ? ' selected' : '') + '>Seconds</option><option value="m"' + (p.freeDurationUnit === 'm' ? ' selected' : '') + '>Minutes</option><option value="h"' + (p.freeDurationUnit === 'h' ? ' selected' : '') + '>Hours</option><option value="day"' + (p.freeDurationUnit === 'day' ? ' selected' : '') + '>Days</option><option value="w"' + (p.freeDurationUnit === 'w' ? ' selected' : '') + '>Weeks</option></select></div></div>' : '') +
         '<div class="dash-row">' + pricingHtml + '</div>' +
+        (p.mode === 'tiers' ? '<div style="margin-bottom:16px;"><div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Delete Key Types</div>' + p.tiers.map(function(t, tIdx) { return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,79,79,0.08);border:1px solid rgba(255,79,79,0.2);border-radius:8px;margin-bottom:6px;"><span style="font-size:0.85rem;">' + t.name + '</span><button class="dash-delete-tier-btn" data-del-prod-idx="' + idx + '" data-del-tier-idx="' + tIdx + '" style="background:rgba(255,79,79,0.2);border:1px solid rgba(255,79,79,0.4);color:#ff8a8a;padding:4px 10px;border-radius:6px;font-size:0.7rem;cursor:pointer;font-weight:600;">Delete</button></div>'; }).join('') + '</div>' : '') +
         (p.mode === 'tiers' ? '<div class="dash-save-bar" style="margin-bottom:16px;"><button class="dash-add-tier-btn dash-save-btn" data-add-tier-idx="' + idx + '" style="background:rgba(123,47,255,0.12);color:#b94cff;border:1px solid rgba(123,47,255,0.3);">+ Add Key Type</button></div>' : '') +
         '<div class="dash-field dash-field-link">' +
           '<label>Download Link (sent to buyers after they sign in &amp; click Get Access)</label>' +
@@ -1018,10 +1092,16 @@ function renderDashboard() {
       const products = getProducts();
       const p = products[idx];
 
-      card.querySelectorAll('input, select').forEach(function(input) {
+      card.querySelectorAll('input, select, textarea').forEach(function(input) {
         const field = input.dataset.field;
         const tierIdx = input.dataset.tier;
         let val = input.value;
+        
+        // Handle features textarea — split by newline and escape &
+        if (field === 'features') {
+          val = val.split('\n').map(f => f.trim()).filter(f => f).map(f => f.replace(/&/g, '&amp;'));
+        }
+        
         if (input.type === 'number') val = parseFloat(val) || 0;
         if (tierIdx !== undefined) {
           p.tiers[parseInt(tierIdx, 10)][field] = val;
@@ -1030,7 +1110,7 @@ function renderDashboard() {
         }
       });
 
-      saveProducts(products);
+      saveProductsToFirebase(products);
       renderProducts();
       btn.textContent = '✓ Saved';
       btn.style.background = 'linear-gradient(135deg,#3dff8f,#3d9bff)';
@@ -1048,7 +1128,7 @@ function renderDashboard() {
       const p = products[idx];
       const newTier = { name: 'New Tier', price: 9.99, stock: 0 };
       p.tiers.push(newTier);
-      saveProducts(products);
+      saveProductsToFirebase(products);
       renderDashboard();
       showToast('New key type added to ' + p.title, true);
     });
@@ -1070,10 +1150,11 @@ function renderDashboard() {
         downloadUrl: '', status: '',
         tiers: [],
         freeMode: '',
-        freeDuration: '7'
+        freeDuration: '7',
+        freeDurationUnit: 'day'
       };
       products.push(newProduct);
-      saveProducts(products);
+      saveProductsToFirebase(products);
       renderDashboard();
       renderProducts();
       showToast('New product added! Edit it below.', true);
@@ -1092,7 +1173,7 @@ function renderDashboard() {
       } else {
         p.freeMode = 'temp';
       }
-      saveProducts(products);
+      saveProductsToFirebase(products);
       renderDashboard();
       renderProducts();
       showToast(p.freeMode === 'temp' ? 'Temporary free enabled for ' + p.title : 'Temporary free disabled', true);
@@ -1107,10 +1188,45 @@ function renderDashboard() {
       const products = getProducts();
       const p = products[idx];
       p.freeMode = p.freeMode === 'permanent' ? '' : 'permanent';
-      saveProducts(products);
+      saveProductsToFirebase(products);
       renderDashboard();
       renderProducts();
       showToast(p.freeMode === 'permanent' ? 'Permanent free enabled for ' + p.title : 'Permanent free disabled', true);
+    });
+  });
+
+  // Delete tier button
+  body.querySelectorAll('.dash-delete-tier-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const prodIdx = parseInt(btn.dataset.delProdIdx, 10);
+      const tierIdx = parseInt(btn.dataset.delTierIdx, 10);
+      const products = getProducts();
+      const tierName = products[prodIdx].tiers[tierIdx].name;
+      if (confirm('Delete tier "' + tierName + '"?')) {
+        products[prodIdx].tiers.splice(tierIdx, 1);
+        saveProductsToFirebase(products);
+        renderDashboard();
+        renderProducts();
+        showToast('Tier deleted', true);
+      }
+    });
+  });
+
+  // Delete product button
+  body.querySelectorAll('.dash-delete-product-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const prodIdx = parseInt(btn.dataset.delProdIdx, 10);
+      const products = getProducts();
+      const prodName = products[prodIdx].title;
+      if (confirm('Delete product "' + prodName + '"? This cannot be undone.')) {
+        products.splice(prodIdx, 1);
+        saveProductsToFirebase(products);
+        renderDashboard();
+        renderProducts();
+        showToast('Product deleted', true);
+      }
     });
   });
 }
@@ -1124,10 +1240,15 @@ function checkAdminRoute() {
 }
 window.addEventListener('hashchange', checkAdminRoute);
 checkAdminRoute();
-if (getAdminSession()) updateNavAdmin();
 
-// Restore session on load
-updateNav(getSession());
+// Restore session on load (with small delay to ensure Firebase loads first)
+setTimeout(function() {
+  if (getAdminSession()) {
+    updateNavAdmin();
+  } else {
+    updateNav(getSession());
+  }
+}, 100);
 </script>
 </body>
 </html>
