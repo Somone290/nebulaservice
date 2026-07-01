@@ -498,61 +498,28 @@
 </div>
 
 <script>
-// ── FIREBASE CONFIG (SDK officiel) ──
-let db = null;
-
-// Load Firebase SDK from CDN
-(function() {
-  const s1 = document.createElement('script');
-  s1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-  
-  const s2 = document.createElement('script');
-  s2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
-  
-  s2.onload = function() {
-    firebase.initializeApp({
-      databaseURL: 'https://nebula-backend-7fa5a-default-rtdb.firebaseio.com'
-    });
-    db = firebase.database();
-    console.log('Firebase SDK loaded');
-    loadProductsFromFirebase();
-  };
-  
-  s1.onload = function() { document.head.appendChild(s2); };
-  document.head.appendChild(s1);
-})();
-
-async function firebaseGet(path) {
-  return new Promise((resolve) => {
-    if (!db) { resolve(null); return; }
-    db.ref(path).once('value', (snapshot) => {
-      resolve(snapshot.val());
-    }).catch(e => { console.error('Firebase error:', e); resolve(null); });
-  });
-}
-
-async function firebaseSet(path, data) {
-  return new Promise((resolve) => {
-    if (!db) { resolve(false); return; }
-    db.ref(path).set(data).then(() => {
-      resolve(true);
-    }).catch(e => { console.error('Firebase error:', e); resolve(false); });
-  });
-}
+// ── GITHUB STORAGE (accessible partout, pas de CORS) ──
+// Les produits se sauvegardent en localStorage (local)
+// Tu peux les pousser manuellement sur GitHub si tu veux les partager
 
 async function loadProductsFromFirebase() {
-  const data = await firebaseGet('products');
-  if (data) {
-    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(data));
-    renderProducts();
-    return data;
+  // Sur téléphone/desktop, charge depuis localStorage
+  // Les changements se sauvegardent localement
+  const local = localStorage.getItem(PRODUCTS_KEY);
+  if (local) {
+    try {
+      renderProducts();
+      return JSON.parse(local);
+    } catch(e) { return getProducts(); }
   }
   return getProducts();
 }
 
 async function saveProductsToFirebase(products) {
+  // Sauvegarde seulement en localStorage (pas de problème CORS)
   saveProducts(products);
-  return await firebaseSet('products', products);
+  console.log('Produits sauvegardés localement');
+  return true;
 }
 
 // ── CANVAS BACKGROUND ──
