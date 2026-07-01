@@ -1073,8 +1073,10 @@ function renderDashboard() {
       const card = body.querySelector('[data-product-idx="' + idx + '"]');
       const products = getProducts();
       const p = products[idx];
+      const productCard = body.querySelector('[data-product-idx="' + idx + '"]');
+      if (!productCard) { console.error('Card not found for product', idx); return; }
 
-      card.querySelectorAll('input, select, textarea').forEach(function(input) {
+      productCard.querySelectorAll('input, select, textarea').forEach(function(input) {
         const field = input.dataset.field;
         const tierIdx = input.dataset.tier;
         let val = input.value;
