@@ -1069,8 +1069,10 @@ function renderDashboard() {
   // Save handlers
   body.querySelectorAll('.dash-save-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
+      console.log('Save btn clicked, dataset:', btn.dataset);
       const idx = parseInt(btn.dataset.saveIdx, 10);
-      const card = body.querySelector('[data-product-idx="' + idx + '"]');
+      console.log('Parsed idx:', idx);
+      if (isNaN(idx)) { console.error('Invalid idx:', btn.dataset.saveIdx); return; }
       const products = getProducts();
       const p = products[idx];
       const productCard = body.querySelector('[data-product-idx="' + idx + '"]');
